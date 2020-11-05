@@ -306,8 +306,10 @@ public interface DeliveryService {
 }
 
 - 환불요청을 받은 직후(@PostPersist) 배송을 요청하도록 처리
+
 ```
-# return.java (Entity)
+
+return.java (Entity)
     @PostPersist
     public void onPostPersist(){
         Refunded refunded = new Refunded();
@@ -319,23 +321,21 @@ public interface DeliveryService {
         delivery.setOrderId(this.getOrderId());
         delivery.setDeliveryStatus("refunded");
 
-        // mappings goes here
         RefundApplication.applicationContext.getBean(pizzamj.external.DeliveryService.class)
             .delivery(delivery);
 
 
     }
 ```
-
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
 
 ```
-# 배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
+배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 
-#환불처리
+환불처리
 
 http http://localhost:8086/refunds orderId=1 reason="delivery error"  #Fail
-```
+
 ![image](https://user-images.githubusercontent.com/70673848/98238015-1fe57e80-1fa9-11eb-9608-72667ceb144b.png)
 ```
 #배송 서비스 재기동
