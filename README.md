@@ -476,7 +476,7 @@ mvn spring-boot:run
 ```
 주문현황및 환불 사유까지  VIEW로 구현
 ```
-![image](https://user-images.githubusercontent.com/70673848/98245014-aa32e000-1fb3-11eb-9834-313403699698.png)
+![image](https://user-images.githubusercontent.com/70673848/98247596-2aa71000-1fb7-11eb-84ca-bd1682a0ca73.png)
 
 
 
@@ -484,12 +484,11 @@ mvn spring-boot:run
 
 application.yaml파일에 소스 적용
 
-
-![image](https://user-images.githubusercontent.com/70673848/98185841-ccdfdd00-1f50-11eb-8566-10ac8d20791f.png)
+![image](https://user-images.githubusercontent.com/70673848/98247432-f7fd1780-1fb6-11eb-8660-5f7fc8cdb4a9.png)
 
 호출확인
 
-![image](https://user-images.githubusercontent.com/70673848/98185850-cfdacd80-1f50-11eb-8bdb-66e0c4e59169.png)
+![image](https://user-images.githubusercontent.com/70673848/98247834-79ed4080-1fb7-11eb-9f34-7a8ab73b04e9.png)
 
 # 운영
 
