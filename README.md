@@ -249,20 +249,20 @@ public interface RefundRepository extends PagingAndSortingRepository<Refund, Lon
 - 적용 후 REST API 의 테스트
 ```
 # 주문처리
-http http://order:8080/order qty=10 pizzaId=10
+http http://localhost:8081/orders pizzaId=10 qty=1
 
 !@그림필요
 ```
 
-![image](https://user-images.githubusercontent.com/70673848/98125248-975ad580-1ef7-11eb-9aa2-8c1f95dc9d6f.png)
+![image](https://user-images.githubusercontent.com/70673848/98238682-1c9ec280-1faa-11eb-8522-1ca141843920.png)
+
 
 ```
 # 주문 상태 확인
-http localhost:8081/orders/1
-!@그림필요
+http localhost:8081/orders/2
 
 ```
-![image](https://user-images.githubusercontent.com/70673848/98125455-da1cad80-1ef7-11eb-8c74-bec335853edc.png)
+![image](https://user-images.githubusercontent.com/70673848/98238741-33451980-1faa-11eb-8ee8-ad44298a0ac0.png)
 
 ## 폴리글랏 퍼시스턴스
 
