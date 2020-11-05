@@ -332,9 +332,9 @@ public interface DeliveryService {
 배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 ```
 # 환불처리
-```
 
 http http://localhost:8086/refunds orderId=1 reason="delivery error"  #Fail
+
 ```
 ![image](https://user-images.githubusercontent.com/70673848/98238015-1fe57e80-1fa9-11eb-9608-72667ceb144b.png)
 ```
@@ -457,25 +457,25 @@ public class PolicyHandler{
 
 쿠폰 시스템은 환불서비스와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 쿠폰 시스템이 유지보수로 인해 잠시 내려간 상태라도  문제가 없다:
 
-
 쿠폰 서비스를 잠시 내려놓음 
-```
+
 ![image](https://user-images.githubusercontent.com/70673848/98244601-09442500-1fb3-11eb-9b96-1e56e6d5fa1c.png)
 
-```
 쿠폰 서비스 재기동
+```
 cd coupon
 mvn spring-boot:run
+```
 
 이벤트 수신 후 환불 정보가 생성된다.
-```
+
 ![image](https://user-images.githubusercontent.com/70673848/98244836-650eae00-1fb3-11eb-8539-b0668b288170.png)
 
 
 ## CQRS 적용
-
+```
 주문현황및 환불 사유까지  VIEW로 구현
-
+```
 ![image](https://user-images.githubusercontent.com/70673848/98245014-aa32e000-1fb3-11eb-9834-313403699698.png)
 
 
