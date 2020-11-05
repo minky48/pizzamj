@@ -250,6 +250,8 @@ public interface RefundRepository extends PagingAndSortingRepository<Refund, Lon
 ```
 # 주문처리
 http http://order:8080/order qty=10 pizzaId=10
+
+!@그림필요
 ```
 
 ![image](https://user-images.githubusercontent.com/70673848/98125248-975ad580-1ef7-11eb-9aa2-8c1f95dc9d6f.png)
@@ -257,6 +259,8 @@ http http://order:8080/order qty=10 pizzaId=10
 ```
 # 주문 상태 확인
 http localhost:8081/orders/1
+!@그림필요
+
 ```
 ![image](https://user-images.githubusercontent.com/70673848/98125455-da1cad80-1ef7-11eb-8c74-bec335853edc.png)
 
@@ -279,14 +283,13 @@ H2가 아닌 Derby in-memory DB를 사용함
 
 ## 동기식 호출 과 Fallback 처리
 
-분석단계에서의 조건 중 하나로 주문(order)->결제(payment) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
+분석단계에서의 조건 중 하나로 환불(refund)->배송(delivery) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
-- 결제서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
+- 배송서비스를 호출하기 위하여 Stub과 (FeignClient) 를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
+DeliveryService.java
 
 ```
-# (payment) PaymentService.java
-
-package takbaeyo.external;
+package pizzamj.external;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -295,50 +298,53 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 
-@FeignClient(name="payment", url="http://localhost:8082")
-public interface PaymentService {
+@FeignClient(name="delivery", url="${api.url.delivery}")
+public interface DeliveryService {
 
-    @RequestMapping(method= RequestMethod.POST, path="/payments")
-    public void dopay(@RequestBody Payment payment);
+    @RequestMapping(method= RequestMethod.GET, path="/deliveries")
+    public void delivery(@RequestBody Delivery delivery);
 
 }
-```
 
-- 주문을 받은 직후(@PostPersist) 결제를 요청하도록 처리
+- 환불요청을 받은 직후(@PostPersist) 배송을 요청하도록 처리
 ```
-# order.java (Entity)
-   @PostPersist
+# return.java (Entity)
+    @PostPersist
     public void onPostPersist(){
-        Ordered ordered = new Ordered();
-        BeanUtils.copyProperties(this, ordered);
-        ordered.publishAfterCommit();
+        Refunded refunded = new Refunded();
+        BeanUtils.copyProperties(this, refunded);
+        refunded.publishAfterCommit();
 
-        pizza.external.Payment payment = new pizza.external.Payment();
+        pizzamj.external.Delivery delivery = new pizzamj.external.Delivery();
 
-        payment.setOrderId(this.getId());
-        payment.setPaymentStatus("Paid");
+        delivery.setOrderId(this.getOrderId());
+        delivery.setDeliveryStatus("refunded");
 
-        OrderApplication.applicationContext.getBean(pizza.external.PaymentService.class)
-        .doPayment(payment);
+        // mappings goes here
+        RefundApplication.applicationContext.getBean(pizzamj.external.DeliveryService.class)
+            .delivery(delivery);
+
+
+    }
 ```
 
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
 
-
 ```
-# 결제 (payment) 서비스를 잠시 내려놓음 (ctrl+c)
+# 배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 
-#주문처리
-http localhost:8081/orders pizzaId=1 qty=1   #Fail
+#환불처리
+!@그림필요
+http http://localhost:8086/returns requestId=3 reason="test sync"  #Fail
 ```
 ![image](https://user-images.githubusercontent.com/70673848/98130658-d9871580-1efd-11eb-9447-0175789ca9f1.png)
 ```
-#결제서비스 재기동
-cd payment
+#배송 서비스 재기동
+cd delivery
 mvn spring-boot:run
 
-#주문처리
-http localhost:8081/orders pizzaId=1 qty=1   #Success
+#환불처리
+http http://localhost:8086/returns requestId=3 reason="test sync"  #Success
 ```
 ![image](https://user-images.githubusercontent.com/70673848/98130748-ef94d600-1efd-11eb-83f6-6acad31ce584.png)
 
