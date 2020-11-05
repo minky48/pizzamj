@@ -23,7 +23,7 @@
     - [오토스케일 아웃](#오토스케일-아웃)
     - [무정지 재배포](#무정지-재배포)
 
-# 서비스 시나리오
+# 서비스 시나리오 
 
 기능적 요구사항
 1. 고객이 피자종류와 수량을 주문한다.
@@ -170,51 +170,42 @@ mvn spring-boot:run
 
 - 각 서비스내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다: (예시는 pay 마이크로 서비스). 이때 가능한 현업에서 사용하는 언어 (유비쿼터스 랭귀지)를 그대로 사용하려고 노력했다. 하지만, 일부 구현에 있어서 영문이 아닌 경우는 실행이 불가능한 경우가 있기 때문에 계속 사용할 방법은 아닌것 같다. (Maven pom.xml, Kafka의 topic id, FeignClient 의 서비스 id 등은 한글로 식별자를 사용하는 경우 오류가 발생하는 것을 확인하였다)
 
+refund.java
+
 ```
-package pizza;
+package pizzamj;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 
 @Entity
-@Table(name="Order_table")
-public class Order {
+@Table(name="Refund_table")
+public class Refund {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-    private Long pizzaId;
-    // LDH 소스추가 초기값 설정
-    private String orderStatus ="Ordered";
-    private Long qty;
+    private Long orderId;
+    private String reason;
 
     @PostPersist
     public void onPostPersist(){
-        Ordered ordered = new Ordered();
-        BeanUtils.copyProperties(this, ordered);
-        ordered.publishAfterCommit();
+        Refunded refunded = new Refunded();
+        BeanUtils.copyProperties(this, refunded);
+        refunded.publishAfterCommit();
 
         //Following code causes dependency to external APIs
         // it is NOT A GOOD PRACTICE. instead, Event-Policy mapping is recommended.
 
-        pizza.external.Payment payment = new pizza.external.Payment();
-        
-        payment.setOrderId(this.getId());
-        payment.setPaymentStatus("Paid");
+        pizzamj.external.Delivery delivery = new pizzamj.external.Delivery();
+
+        delivery.setOrderId(this.getOrderId());
+        delivery.setDeliveryStatus("refunded");
 
         // mappings goes here
-        OrderApplication.applicationContext.getBean(pizza.external.PaymentService.class)
-            .doPayment(payment);
-
-
-    }
-
-    @PostUpdate
-    public void onPostUpdate(){
-        OrderCanceled orderCanceled = new OrderCanceled();
-        BeanUtils.copyProperties(this, orderCanceled);
-        orderCanceled.publishAfterCommit();
+        RefundApplication.applicationContext.getBean(pizzamj.external.DeliveryService.class)
+            .delivery(delivery);
 
 
     }
@@ -227,40 +218,32 @@ public class Order {
     public void setId(Long id) {
         this.id = id;
     }
-    public Long getPizzaId() {
-        return pizzaId;
+    public Long getOrderId() {
+        return orderId;
     }
 
-    public void setPizzaId(Long pizzaId) {
-        this.pizzaId = pizzaId;
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
-    public String getOrderStatus() {
-        return orderStatus;
-    }
-
-    public void setOrderStatus(String orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-    public Long getQty() {
-        return qty;
+    public String getReason() {
+        return reason;
     }
 
-    public void setQty(Long qty) {
-        this.qty = qty;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
-
-
-}
 
 ```
 - Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
+RefundRepository.java
+
 ```
-package pizza;
+package pizzamj;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface PurchaseRepository extends PagingAndSortingRepository<Purchase, Long>{
- 
+public interface RefundRepository extends PagingAndSortingRepository<Refund, Long>{
+
 }
 ```
 - 적용 후 REST API 의 테스트
