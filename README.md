@@ -354,42 +354,39 @@ http http://localhost:8086/refunds orderId=1 reason="delivery error" #Success
 
 ## 비동기식 호출 / 시간적 디커플링 / 장애격리 / 최종 (Eventual) 일관성 테스트
 
-배달이 이루어진 후에 쿠폰시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리하여 쿠폰 시스템의 처리를 위하여 주문이 블로킹 되지 않아도록 처리한다.
+환불이 완료되어진 후에 쿠폰시스템으로 이를 알려주는 행위는 동기식이 아니라 비 동기식으로 처리하여 쿠폰 시스템의 처리를 위하여 주문이 블로킹 되지 않아도록 처리한다.
  
-- 이를 위하여 배달이력에 기록을 남긴 후에 곧바로 쿠폰이 발행 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
- 
+- 이를 위하여 배달이력에 기록을 남긴 후에 곧바로 쿠폰이 회수 되었다는 도메인 이벤트를 카프카로 송출한다(Publish)
 ```
-package pizza;
+package pizzamj;
 
 import javax.persistence.*;
 import org.springframework.beans.BeanUtils;
 import java.util.List;
 
 @Entity
-@Table(name="Delivery_table")
-public class Delivery {
+@Table(name="Refund_table")
+public class Refund {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
-    private String deliveryStatus;
     private Long orderId;
+    private String reason;
 
     @PostPersist
     public void onPostPersist(){
-        Delivered delivered = new Delivered();
-        BeanUtils.copyProperties(this, delivered);
-        delivered.publishAfterCommit();
+        Refunded refunded = new Refunded();
+        BeanUtils.copyProperties(this, refunded);
+        refunded.publishAfterCommit();
+ ```       
 
-
-    }
+- 환불 이벤트에 대해서 이를 수신하여 자신의 쿠폰 정책을 처리하도록 PolicyHandler 를 구현한다:
+ 
 ```
-- 배달완료 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다:
+package pizzamj;
 
-```
-package pizza;
-
-import pizza.config.kafka.KafkaProcessor;
+import pizzamj.config.kafka.KafkaProcessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -397,11 +394,14 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
+import java.util.Optional;
+
 @Service
 public class PolicyHandler{
 
     @Autowired
-    CouponRepository CouponRepository;
+    CouponRepository couponRepository;
 
     @StreamListener(KafkaProcessor.INPUT)
     public void onStringEventListener(@Payload String eventString){
@@ -412,55 +412,72 @@ public class PolicyHandler{
     public void wheneverDelivered_PublishCoupon(@Payload Delivered delivered){
 
         if(delivered.isMe()){
-
-            Coupon coupon = new Coupon();
-            CouponRepository.save(coupon);
+            if(delivered.getDeliveryStatus().equals("Finished")){
+                Coupon coupon = new Coupon();
+                coupon.setOrderId(delivered.getOrderId());
+                coupon.setStatus("published");
+                couponRepository.save(coupon);
+            }
 
             System.out.println("##### listener PublishCoupon : " + delivered.toJson());
         }
     }
+    @StreamListener(KafkaProcessor.INPUT)
+    public void wheneverRefunded_PublishCoupon(@Payload Refunded refunded){
+
+        if(refunded.isMe()){
+
+            int flag=0;
+            Iterator<Coupon> iterator = couponRepository.findAll().iterator();
+            while(iterator.hasNext()){
+                Coupon pointTmp = iterator.next();
+                if(pointTmp.getOrderId() == refunded.getOrderId()){
+                    Optional<Coupon> PointOptional = couponRepository.findById(pointTmp.getId());
+                    Coupon coupon = PointOptional.get();
+                    coupon.setStatus("couponRefunded");
+                    couponRepository.save(coupon);
+                    flag=1;
+                }
+            }
+
+            if (flag==0 ){
+                Coupon coupon = new Coupon();
+                coupon.setOrderId(refunded.getOrderId());
+                coupon.setStatus("couponRefunded");
+                couponRepository.save(coupon);
+            }
+
+
+            System.out.println("##### listener PublishCoupon : " + refunded.toJson());
+        }
+    }
 
 }
-
-
 ```
 
-쿠폰 시스템은 배송서비스와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 쿠폰 시스템이 유지보수로 인해 잠시 내려간 상태라도 주문을 받는데 문제가 없다:
+쿠폰 시스템은 환불서비스와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 쿠폰 시스템이 유지보수로 인해 잠시 내려간 상태라도  문제가 없다:
 
 
-
-![image](https://user-images.githubusercontent.com/70673848/98187965-7b861c80-1f55-11eb-8ce1-4ec6798e50df.png)
-![image](https://user-images.githubusercontent.com/70673848/98187975-7de87680-1f55-11eb-8a1f-35e74d86a864.png)
-```
 쿠폰 서비스를 잠시 내려놓음 
 ```
-![image](https://user-images.githubusercontent.com/70673848/98187982-817bfd80-1f55-11eb-946c-3fea9417de92.png)
-![image](https://user-images.githubusercontent.com/70673848/98187989-83de5780-1f55-11eb-9b3a-1e678cf63948.png)
-![image](https://user-images.githubusercontent.com/70673848/98187993-86d94800-1f55-11eb-8976-d6aabbe0d48e.png)
+![image](https://user-images.githubusercontent.com/70673848/98244601-09442500-1fb3-11eb-9b96-1e56e6d5fa1c.png)
 
 ```
 쿠폰 서비스 재기동
 cd coupon
 mvn spring-boot:run
 
-모든 주문의 상태가 "배송됨"으로 확인
+이벤트 수신 후 환불 정보가 생성된다.
 ```
-![image](https://user-images.githubusercontent.com/70673848/98188001-89d43880-1f55-11eb-95a9-00a556648bb1.png)
+![image](https://user-images.githubusercontent.com/70673848/98244836-650eae00-1fb3-11eb-8539-b0668b288170.png)
 
 
 ## CQRS 적용
 
-order의 처리 결과
+주문현황및 환불 사유까지  VIEW로 구현
 
-![image](https://user-images.githubusercontent.com/70673848/98133383-df322a80-1f00-11eb-84ec-86c79e322f64.png)
+![image](https://user-images.githubusercontent.com/70673848/98245014-aa32e000-1fb3-11eb-9834-313403699698.png)
 
-delivery의 처리 결과 
-
-![image](https://user-images.githubusercontent.com/70673848/98133397-e3f6de80-1f00-11eb-9576-5b3ac711f0c4.png)
-
-주문현황을 VIEW로 구현
-
-![image](https://user-images.githubusercontent.com/70673848/98133365-d8a3b300-1f00-11eb-9d98-65cb337cc926.png)
 
 
 ## gateway 적용
