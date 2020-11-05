@@ -304,12 +304,12 @@ public interface DeliveryService {
     public void delivery(@RequestBody Delivery delivery);
 
 }
+```
 
 - 환불요청을 받은 직후(@PostPersist) 배송을 요청하도록 처리
 
-```
-
-return.java (Entity)
+ return.java (Entity)
+ ```
     @PostPersist
     public void onPostPersist(){
         Refunded refunded = new Refunded();
@@ -329,16 +329,16 @@ return.java (Entity)
 ```
 - 동기식 호출에서는 호출 시간에 따른 타임 커플링이 발생하며, 결제 시스템이 장애가 나면 주문도 못받는다는 것을 확인:
 
-```
-배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 
-환불처리
+배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
+```
+# 환불처리
 
 http http://localhost:8086/refunds orderId=1 reason="delivery error"  #Fail
-
+```
 ![image](https://user-images.githubusercontent.com/70673848/98238015-1fe57e80-1fa9-11eb-9608-72667ceb144b.png)
 ```
-#배송 서비스 재기동
+# 배송 서비스 재기동
 cd delivery
 mvn spring-boot:run
 
@@ -349,7 +349,6 @@ http http://localhost:8086/refunds orderId=1 reason="delivery error" #Success
 ![image](https://user-images.githubusercontent.com/70673848/98238285-8074bb80-1fa9-11eb-8473-8ea5e9d2adba.png)
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
-
 
 
 
