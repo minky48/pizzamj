@@ -1,7 +1,7 @@
 
-# 최종조별과제 - 피자주문배달 시스템 
+# 개인과제 - 피자주문배달+환불 시스템 
 
-본 프로그램은 피자주문배달 시스템이다.
+본 프로그램은 피자주문배달에 환불기능이 포함된 시스템이다.
 - 체크포인트 : https://workflowy.com/s/assessment-check-po/T5YrzcMewfo4J6LW
 
 
@@ -105,7 +105,8 @@
 # 분석/설계
     
 ### 이벤트 도출
-* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/ZTi9sAEiJxRHIn5xXAA2Lkn9KNV2/mine/de3fac4ae58d3699a80eb8ac15eabe8c/-MLCf4nI9XHFhdCI2DhE
+* MSAEz 로 모델링한 이벤트스토밍 결과:  http://www.msaez.io/#/storming/NkR3vaIgD8P8F2y2ub0y45zZLHz2/mine/47c56b46d0d4b9710eeb203d13095a53/-MLLPAsFiPAX5VEAYy-5
+
 
 ![image](https://user-images.githubusercontent.com/70673848/98124211-3a125480-1ef6-11eb-8c3a-e73d38cbad33.png)
 
