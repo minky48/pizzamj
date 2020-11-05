@@ -334,19 +334,20 @@ public interface DeliveryService {
 # 배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 
 #환불처리
-!@그림필요
-http http://localhost:8086/returns requestId=3 reason="test sync"  #Fail
+
+http http://localhost:8086/refunds orderId=1 reason="delivery error"  #Fail
 ```
-![image](https://user-images.githubusercontent.com/70673848/98130658-d9871580-1efd-11eb-9447-0175789ca9f1.png)
+![image](https://user-images.githubusercontent.com/70673848/98238015-1fe57e80-1fa9-11eb-9608-72667ceb144b.png)
 ```
 #배송 서비스 재기동
 cd delivery
 mvn spring-boot:run
 
 #환불처리
-http http://localhost:8086/returns requestId=3 reason="test sync"  #Success
+http http://localhost:8086/refunds orderId=1 reason="delivery error" #Success
 ```
-![image](https://user-images.githubusercontent.com/70673848/98130748-ef94d600-1efd-11eb-83f6-6acad31ce584.png)
+
+![image](https://user-images.githubusercontent.com/70673848/98238285-8074bb80-1fa9-11eb-8473-8ea5e9d2adba.png)
 
 - 또한 과도한 요청시에 서비스 장애가 도미노 처럼 벌어질 수 있다. (서킷브레이커, 폴백 처리는 운영단계에서 설명한다.)
 
