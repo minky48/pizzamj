@@ -251,7 +251,6 @@ public interface RefundRepository extends PagingAndSortingRepository<Refund, Lon
 # 주문처리
 http http://localhost:8081/orders pizzaId=10 qty=1
 
-!@그림필요
 ```
 
 ![image](https://user-images.githubusercontent.com/70673848/98238682-1c9ec280-1faa-11eb-8522-1ca141843920.png)
@@ -333,6 +332,7 @@ public interface DeliveryService {
 배송(delivery) 서비스를 잠시 내려놓음 (ctrl+c)
 ```
 # 환불처리
+```
 
 http http://localhost:8086/refunds orderId=1 reason="delivery error"  #Fail
 ```
