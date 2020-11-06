@@ -494,7 +494,7 @@ application.yaml파일에 소스 적용
 
 ## CI/CD 설정
 각 구현체들은 각자의 source repository 에 구성되었고, 사용한 CI/CD 플랫폼은 Azure를 사용하였으며, pipeline build script 는 각 프로젝트 폴더 이하에 deployment.yml, service.yml 에 포함되었다.
-![image](https://user-images.githubusercontent.com/70673848/98318572-367bec00-2022-11eb-80d6-a4cd6a62916f.png)
+![image](https://user-images.githubusercontent.com/70673848/98327124-2e2dac00-2036-11eb-9e78-fa92d7a70bc0.png)
 
 ![image](https://user-images.githubusercontent.com/70673848/98318588-3c71cd00-2022-11eb-9983-aac3f1cb2d58.png)
 ![image](https://user-images.githubusercontent.com/70673848/98318592-409dea80-2022-11eb-958c-c47c636a902c.png)
