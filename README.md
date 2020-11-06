@@ -596,8 +596,7 @@ kubectl set image ...
 ```
 
 - seige 의 화면으로 넘어가서 Availability 가 100% 미만으로 떨어졌는지 확인
-
-![image](https://user-images.githubusercontent.com/70673848/98135259-f6721780-1f02-11eb-99b9-e8bac256177d.png)
+![image](https://user-images.githubusercontent.com/70673848/98326100-bfe7ea00-2033-11eb-86cc-e6c93fa8a97c.png)
 
 
 
@@ -611,7 +610,7 @@ kubectl apply -f kubernetes/deployment.yaml
 
 - 동일한 시나리오로 재배포 한 후 Availability 확인:
 
-![image](https://user-images.githubusercontent.com/70673848/98135292-fffb7f80-1f02-11eb-876e-937a98b39f91.png)
+![image](https://user-images.githubusercontent.com/70673848/98326277-3258ca00-2034-11eb-913e-d2a0a5af76e8.png)
 
 
 배포기간 동안 Availability 가 변화없기 때문에 무정지 재배포가 성공한 것으로 확인됨.
