@@ -124,7 +124,7 @@
    
     - Core Domain:  order,  delivery : 핵심 서비스이며, 연간 Up-time SLA 수준을 99.999% 목표, 배포주기는 request의 경우 1주일 1회 미만, delivery의 경우 1개월 1회 미만
     
-    - Supporting Domain:   statusview, coupon, return   : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 
+    - Supporting Domain:   statusview, coupon, refund   : 경쟁력을 내기위한 서비스이며, SLA 수준은 연간 60% 이상 uptime 목표, 
                                                           배포주기는 각 팀의 자율이나 표준 스프린트 주기가 1주일 이므로 1주일 1회 이상을 기준으로 함.
     
     - General Domain:   Payment : 결제서비스로 3rd Party 외부 서비스를 사용하는 것이 경쟁력이 높음 (핑크색으로 이후 전환할 예정)
@@ -161,7 +161,7 @@ mvn spring-boot:run
 cd coupon
 mvn spring-boot:run
 
-cd return
+cd refund
 mvn spring-boot:run 
 
 ```
@@ -307,7 +307,7 @@ public interface DeliveryService {
 
 - 환불요청을 받은 직후(@PostPersist) 배송을 요청하도록 처리
 
- return.java (Entity)
+ refund.java (Entity)
  ```
     @PostPersist
     public void onPostPersist(){
@@ -618,7 +618,7 @@ kubectl apply -f kubernetes/deployment.yaml
 ## Liveness 구현
 
 - delivery 의 depolyment.yaml 소스 설정
-http get방식에서 tcp방식으로 변경, 서비스포트 8080이 아닌 고의로 8081로 포트 변경하여 강제로 재기동 되도록 설정 한다.
+ 서비스포트 8080이 아닌 고의로 8081로 포트 변경하여 강제로 재기동 되도록 설정 한다.
 
 
 ![image](https://user-images.githubusercontent.com/70673848/98328001-24a54380-2038-11eb-9671-91094b9bf6d2.png)
