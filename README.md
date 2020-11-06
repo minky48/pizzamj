@@ -621,8 +621,7 @@ kubectl apply -f kubernetes/deployment.yaml
 http get방식에서 tcp방식으로 변경, 서비스포트 8080이 아닌 고의로 8081로 포트 변경하여 강제로 재기동 되도록 설정 한다.
 
 
-![image](https://user-images.githubusercontent.com/70673848/98129462-7d6fc180-1efc-11eb-9d79-a651ee57d3db.png)
-
+![image](https://user-images.githubusercontent.com/70673848/98328001-24a54380-2038-11eb-9671-91094b9bf6d2.png)
 
 
 
